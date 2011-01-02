@@ -88,6 +88,23 @@ if opts.has_key("-h") or opts.has_key("--help"):
     print help_string
     sys.exit(os.EX_OK) # termina execução com sinal de sucesso
 
+# Avaliando título do email
+if opts.has_key("-t"):
+    titulo = opts["-t"]
+elif opts.has_key("--titulo"):
+    titulo = opts["--titulo"]
+else:
+    print(u"Falta título")
+    sys.exit(os.EX_OK)
+
+# Avaliando lista de anexos
+if opts.has_key("-n"):
+    anexos = opts["-n"]
+elif opts.has_key("--anexo"):
+    anexos = opts["--anexo"]
+else:
+    print(u"Falta lista de anexos")
+
 student_list = lista_de_alunos()
 # mantendo apenas os endereços especificados pelos parâmetros
 # FIXME: fazer com que ocorra um erro caso mais de uma opção conflitante seja passada
@@ -97,3 +114,19 @@ elif opts.has_key("--ano"):
     student_list = filter(lambda x: x.index("ra" + opts["--ano"]), student_list)
 
 # TODO: implementar a filtragem por curso
+
+# TODO: implementar a leitura a partir de um arquivo de configuração
+caco = "caco@ic.unicamp.br"
+host = "teste"
+login = "teste"
+user = "teste"
+port = 42
+passwd = "teste"
+
+email_list = []
+for aluno in student_list:
+    email_list.append(Email(aluno, caco, titulo, file_list[0], anexos,
+                            login, user, host, port, passwd))
+
+# enviando lista
+map (lambda x: x.spam(), email_list)
