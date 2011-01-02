@@ -1,7 +1,7 @@
 #!/usr/bin/python2
 # -*- coding: utf-8 -*-
 
-# Copyright 2010 Ivan Sichmann Freitas
+# Copyright 2010,2011 Ivan Sichmann Freitas
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -27,9 +27,8 @@ class Email(SMTP):
     # Parte dessa classe foi feita com base no script de spammer feito por
     # Alexandre Tolstenko e Erick Souza
     def __init__(self, receiver, sender, subject, message, attachment_list,
-                 login, user):
+                 login, user, host, port, password):
         message_file = open(message, "r")
-        SMTP.__init__(self) # FIXME: colocar os parâmetros adequados aqui
         self.msg = email.MIMEMultipart()
         self.msg['Subject'] = subject
         self.msg['From'] = sender
@@ -37,12 +36,24 @@ class Email(SMTP):
         message_file.close()
         self.login = login
         self.user = user
-        self.message_path = message
+        self.host = host
+        self.port = port
+        self.password = password
+        self.attachments = attachment_list
 
-    #def spam(self):
-
+    def spam(self):
+        SMTP.__init__(self, self.host, self.port)
+        self.ehlo()
+        self.starttls()
+        self.ehlo()
+        self.login(self.user, self.password)
+        self.sendmail(self.user, self.receiver, self.msg.as_string())
+        self.quit()
 
 # Funções 
+
+# Retorna uma lista com o email institucional do IC de todos os alunos
+# matriculados
 def lista_de_alunos():
     tmp_file = os.tmpnam()
     os.system("getent passwd | egrep '(/home/cc|/home/ec)' | cut -d ':' -f 1\
@@ -56,22 +67,33 @@ def lista_de_alunos():
 
 # string com a ajuda (deve ser impressa com a opção -h ou --help)
 help_string =u"\
-        Uso: spammer [opções] arquivo_da_mensagem\
-        Opções:\
-        -a, --all    : especifica envio para todos os alunos do IC\
-        -v, --verbose: imprime mais informação durante a execução\
-        -h, --help   : imprime esta ajuda\
-        -q, --quiet  : não imprime nenhuma saída\
-        -y, --ano    : ano a ser enviada a mensagem\
-        -c, --curso  : curso a ser spameado (pode ser cc ou ec)\
-        -t, --titulo : título do spam\
-        -n, --anexo  : caminho para o arquivo anexo da mensagem\
-        "
+Uso: spammer [opções] arquivo_da_mensagem\n\
+Opções:\n\
+-a, --all    : especifica envio para todos os alunos do IC\n\
+-v, --verbose: imprime mais informação durante a execução\n\
+-h, --help   : imprime esta ajuda\n\
+-q, --quiet  : não imprime nenhuma saída\n\
+-y, --ano    : ano a ser enviada a mensagem\n\
+-c, --curso  : curso a ser spameado (pode ser cc ou ec)\n\
+-t, --titulo : título do spam\n\
+-n, --anexo  : caminho para o arquivo anexo da mensagem\
+"
 shortopts_string = "ahvqy:c:t:n:"
 longopts_string = ["all", "help", "verbose", "quiet", "ano=", "curso=", "titulo=", "anexo="]
 
 opts,file_list = getopt(sys.argv[1:], shortopts_string, longopts_string)
+# TODO: buscar um jeito de fazer as opções longas se referirem às curtas (ou vice versa)
 opts = dict(opts)
-if opts.has_key("-a") or opts.has_key("--help"):
+if opts.has_key("-h") or opts.has_key("--help"):
     print help_string
     sys.exit(os.EX_OK) # termina execução com sinal de sucesso
+
+student_list = lista_de_alunos()
+# mantendo apenas os endereços especificados pelos parâmetros
+# FIXME: fazer com que ocorra um erro caso mais de uma opção conflitante seja passada
+if opts.has_key("-y"):
+    student_list = filter(lambda x: x.index("ra" + opts["-y"]), student_list)
+elif opts.has_key("--ano"):
+    student_list = filter(lambda x: x.index("ra" + opts["--ano"]), student_list)
+
+# TODO: implementar a filtragem por curso
