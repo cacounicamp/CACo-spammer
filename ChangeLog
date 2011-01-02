@@ -1,3 +1,10 @@
 2010-12-31 Ivan Sichmann Freitas <ivansichfreitas@gmail.com>
 
 	* Criando arquivos iniciais do projeto
+
+2011-01-02 Ivan Sichmann Freitas <ivansichfreitas@gmail.com>
+
+	* spammer.py: implementado a avaliação dos parâmetros passados via linha
+	de comando
+	
+	* spammer.py (Email): classe terminada, falta testar

@@ -1,1 +1,29 @@
-Script para mandar emails para os alunos do IC
+* Descrição:
+	Script para mandar emails para os alunos do IC
+
+* Requerimentos:
+	* python 2.7
+	* sendmail
+	TODO: rever aqui
+
+* Uso:
+	spammer.py [opções] arquivo_da_mensagem
+	Opções:
+	-a, --all    : especifica envio para todos os alunos do IC
+	-v, --verbose: imprime mais informação durante a execução
+	-h, --help   : imprime esta ajuda
+	-q, --quiet  : não imprime nenhuma saída
+	-y, --ano    : ano a ser enviada a mensagem
+	-c, --curso  : curso a ser spameado (pode ser cc ou ec)
+	-t, --titulo : título do spam
+	-n, --anexo  : caminho para o arquivo anexo da mensagem
+
+* Autor(es):
+	* Ivan Sichmann Freitas
+
+* Licença:
+	* GPLv3
+
+* Agradecimentos:
+	* Erick Souza
+	* Alexandre Tolstenko
