@@ -13,7 +13,7 @@
 	-v, --verbose: imprime mais informação durante a execução
 	-h, --help   : imprime esta ajuda
 	-q, --quiet  : não imprime nenhuma saída
-	-y, --ano    : ano a ser enviada a mensagem
+	-y, --ano    : ano a ser enviada a mensagem (dois dígitos)
 	-c, --curso  : curso a ser spameado (pode ser cc ou ec)
 	-t, --titulo : título do spam
 	-n, --anexo  : caminho para o arquivo anexo da mensagem
@@ -27,3 +27,4 @@
 * Agradecimentos:
 	* Erick Souza
 	* Alexandre Tolstenko
+	* Gustavo Serra Scalet
