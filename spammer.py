@@ -18,10 +18,10 @@
 
 import os
 import sys
-from getopt import gnu_getopt as getopt
 from smtplib import SMTP
 import email
 import ConfigParser
+from optparse import OptionParser
 
 # Classes
 class Email(SMTP):
@@ -51,7 +51,7 @@ class Email(SMTP):
         self.sendmail(self.user, self.receiver, self.msg.as_string())
         self.quit()
 
-# Funções 
+# Funções
 
 # Retorna uma lista com o email institucional do IC de todos os alunos
 # matriculados
@@ -66,26 +66,8 @@ def lista_de_alunos():
 
 # inciando execução do script
 
-if __name__ == "__main__"
-# string com a ajuda (deve ser impressa com a opção -h ou --help)
-    help_string = u"\
-Uso: spammer [opções] arquivo_da_mensagem\n\
-Opções:\n\
--a, --all    : especifica envio para todos os alunos do IC\n\
--v, --verbose: imprime mais informação durante a execução\n\
--h, --help   : imprime esta ajuda\n\
--q, --quiet  : não imprime nenhuma saída\n\
--y, --ano    : ano a ser enviada a mensagem\n\
--c, --curso  : curso a ser spameado (pode ser cc ou ec)\n\
--t, --titulo : título do spam\n\
--n, --anexo  : caminho para o arquivo anexo da mensagem\
-"
-    shortopts_string = "ahvqy:c:t:n:"
-    longopts_string = ["all", "help", "verbose", "quiet", "ano=", "curso=", "titulo=", "anexo="]
-
-# FIXME: realizar a leitura de senha durante a execução, evitando armazenamento
-# em arquivo
-# lendo arquivo de configuração
+if __name__ == "__main__":
+    MIN_ARGS = 1 # número mínimo de argumentos
 # Exemplo:
 # [defaults]
 # host = hostname
@@ -94,50 +76,83 @@ Opções:\n\
 # port = porta_de_conexao_ao_servidor
 # passwd = senha
     config = ConfigParser.ConfigParser()
-    config.read("/etc/caco_spammer.conf", os.path.expandvars("${HOME}/.caco_spammer.conf"))
+    config.read(["/etc/caco_spammer.conf", os.path.expandvars("${HOME}/.caco_spammer.conf")])
+
 # lendo parâmetros de linha de comando
-    opts,file_list = getopt(sys.argv[1:], shortopts_string, longopts_string)
-# TODO: buscar um jeito de fazer as opções longas se referirem às curtas (ou vice versa)
-    opts = dict(opts)
-    if opts.has_key("-h") or opts.has_key("--help"):
-        print help_string
-        sys.exit(os.EX_OK) # termina execução com sinal de sucesso
+# idéia contribuída por Gustavo Serra Scalet
+    options = {
+        '-a': ['--all', u'Envia emails para todos os alinus do IC', False],
+        '-q': ['--quiet', u'Não imprime nada na saída padrão', False],
+        '-v': ['--verbose', u'Imprime informações de status', True],
+        '-y': ['--ano', u'Indica qual o ano a receber os emails (dois \
+               dígitos', ''],
+        '-c': ['--curso', u'Indica qual curso (cc, ec, se não for especificada \
+               é para todos)', ''],
+        '-t': ['--titulo', u'Titulo da mensage (obrigatorio)', ''],
+        '-n': ['--anexo', u'Lista de arquivos anexos', '']
+    }
+    options_list = "".join(["[%s %s] " % (o, options[o][0]) for o in options])
+    options_list += u"arquivo_da_mensagem"
+    opts = OptionParser("Spammer %s" %options_list)
+    for o in options:
+        if type(options[o][2]) is bool:
+            opts.add_option(o, options[o][0],
+                            action="store_true",
+                            help=options[o][1],
+                            default=options[o][2])
+        elif type(options[o][2]) is str:
+            opts.add_option(o, options[o][0],
+                            action="store",
+                            help=options[o][1],
+                            default=options[o][2])
+    (opt, args) = opts.parse_args(sys.argv)
+    if len(args) < MIN_ARGS + 1:
+        print u"""\
+ERRO: número insuficiente de argumentos
+Use a opção -h para ver o modo de uso do aplicativo"""
+        sys.exit(os.EX_USAGE)
+    # construindo um dicionário com as opções
+    opt_str = format(opt)[1:-1].split(',')
+    opt = {}
+    for i in opt_str:
+        _i = i.strip().split(':')
+        rvalue = _i[1].strip()
+        if type(eval(rvalue)) is bool:
+            opt[_i[0].strip("'").strip()] = eval(rvalue)
+        else: # é booleano
+            opt[_i[0].strip("'").strip()] = rvalue.strip("'").strip()
 
 # Avaliando título do email
-    if opts.has_key("-t"):
-        titulo = opts["-t"]
-    elif opts.has_key("--titulo"):
-        titulo = opts["--titulo"]
+    if opt.has_key("titulo"):
+        titulo = opt["titulo"]
     else:
         print(u"Falta título")
-        sys.exit(os.EX_OK)
+        sys.exit(os.EX_USAGE)
 
 # Avaliando lista de anexos
-    if opts.has_key("-n"):
-        anexos = opts["-n"]
-    elif opts.has_key("--anexo"):
-        anexos = opts["--anexo"]
+    if opt.has_key("anexo"):
+        anexos = opt["anexo"]
     else:
-        print(u"Falta lista de anexos")
+        if opt["verbose"]:
+            print(u"Falta lista de anexos")
 
     student_list = lista_de_alunos()
 # mantendo apenas os endereços especificados pelos parâmetros
-# FIXME: fazer com que ocorra um erro caso mais de uma opção conflitante seja passada
-    if opts.has_key("-y"):
-        student_list = filter(lambda x: x.index("ra" + opts["-y"]), student_list)
-    elif opts.has_key("--ano"):
+    if opt.has_key("ano"):
         student_list = filter(lambda x: x.index("ra" + opts["--ano"]), student_list)
 
 # TODO: implementar a filtragem por curso
 
 # FIXME: parar de usar as variáveis inúteis abaixo
-# TODO: implementar a leitura a partir de um arquivo de configuração
+# FIXME: verificar pela existência das opções abaixo na configuração
     CACO = "caco@ic.unicamp.br"
     host = config.get("defaults", "host")
     login = config.get("defaults", "login")
     user = config.get("defaults", "user")
     port = config.get("defaults", "port")
     passwd = config.get("defaults", "passwd")
+    # debug
+    print host, login, user, port, passwd
 
     email_list = []
     for aluno in student_list:
