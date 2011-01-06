@@ -66,8 +66,9 @@ def lista_de_alunos():
 
 # inciando execução do script
 
+if __name__ == "__main__"
 # string com a ajuda (deve ser impressa com a opção -h ou --help)
-help_string = u"\
+    help_string = u"\
 Uso: spammer [opções] arquivo_da_mensagem\n\
 Opções:\n\
 -a, --all    : especifica envio para todos os alunos do IC\n\
@@ -79,8 +80,8 @@ Opções:\n\
 -t, --titulo : título do spam\n\
 -n, --anexo  : caminho para o arquivo anexo da mensagem\
 "
-shortopts_string = "ahvqy:c:t:n:"
-longopts_string = ["all", "help", "verbose", "quiet", "ano=", "curso=", "titulo=", "anexo="]
+    shortopts_string = "ahvqy:c:t:n:"
+    longopts_string = ["all", "help", "verbose", "quiet", "ano=", "curso=", "titulo=", "anexo="]
 
 # FIXME: realizar a leitura de senha durante a execução, evitando armazenamento
 # em arquivo
@@ -92,56 +93,56 @@ longopts_string = ["all", "help", "verbose", "quiet", "ano=", "curso=", "titulo=
 # user = usuario_no_servidor_smtp
 # port = porta_de_conexao_ao_servidor
 # passwd = senha
-config = ConfigParser.ConfigParser()
-config.read("/etc/caco_spammer.conf", os.path.expandvars("${HOME}/.caco_spammer.conf"))
+    config = ConfigParser.ConfigParser()
+    config.read("/etc/caco_spammer.conf", os.path.expandvars("${HOME}/.caco_spammer.conf"))
 # lendo parâmetros de linha de comando
-opts,file_list = getopt(sys.argv[1:], shortopts_string, longopts_string)
+    opts,file_list = getopt(sys.argv[1:], shortopts_string, longopts_string)
 # TODO: buscar um jeito de fazer as opções longas se referirem às curtas (ou vice versa)
-opts = dict(opts)
-if opts.has_key("-h") or opts.has_key("--help"):
-    print help_string
-    sys.exit(os.EX_OK) # termina execução com sinal de sucesso
+    opts = dict(opts)
+    if opts.has_key("-h") or opts.has_key("--help"):
+        print help_string
+        sys.exit(os.EX_OK) # termina execução com sinal de sucesso
 
 # Avaliando título do email
-if opts.has_key("-t"):
-    titulo = opts["-t"]
-elif opts.has_key("--titulo"):
-    titulo = opts["--titulo"]
-else:
-    print(u"Falta título")
-    sys.exit(os.EX_OK)
+    if opts.has_key("-t"):
+        titulo = opts["-t"]
+    elif opts.has_key("--titulo"):
+        titulo = opts["--titulo"]
+    else:
+        print(u"Falta título")
+        sys.exit(os.EX_OK)
 
 # Avaliando lista de anexos
-if opts.has_key("-n"):
-    anexos = opts["-n"]
-elif opts.has_key("--anexo"):
-    anexos = opts["--anexo"]
-else:
-    print(u"Falta lista de anexos")
+    if opts.has_key("-n"):
+        anexos = opts["-n"]
+    elif opts.has_key("--anexo"):
+        anexos = opts["--anexo"]
+    else:
+        print(u"Falta lista de anexos")
 
-student_list = lista_de_alunos()
+    student_list = lista_de_alunos()
 # mantendo apenas os endereços especificados pelos parâmetros
 # FIXME: fazer com que ocorra um erro caso mais de uma opção conflitante seja passada
-if opts.has_key("-y"):
-    student_list = filter(lambda x: x.index("ra" + opts["-y"]), student_list)
-elif opts.has_key("--ano"):
-    student_list = filter(lambda x: x.index("ra" + opts["--ano"]), student_list)
+    if opts.has_key("-y"):
+        student_list = filter(lambda x: x.index("ra" + opts["-y"]), student_list)
+    elif opts.has_key("--ano"):
+        student_list = filter(lambda x: x.index("ra" + opts["--ano"]), student_list)
 
 # TODO: implementar a filtragem por curso
 
 # FIXME: parar de usar as variáveis inúteis abaixo
 # TODO: implementar a leitura a partir de um arquivo de configuração
-CACO = "caco@ic.unicamp.br"
-host = config.get("defaults", "host")
-login = config.get("defaults", "login")
-user = config.get("defaults", "user")
-port = config.get("defaults", "port")
-passwd = config.get("defaults", "passwd")
+    CACO = "caco@ic.unicamp.br"
+    host = config.get("defaults", "host")
+    login = config.get("defaults", "login")
+    user = config.get("defaults", "user")
+    port = config.get("defaults", "port")
+    passwd = config.get("defaults", "passwd")
 
-email_list = []
-for aluno in student_list:
-    email_list.append(Email(aluno, CACO, titulo, file_list[0], anexos,
-                            login, user, host, port, passwd))
+    email_list = []
+    for aluno in student_list:
+        email_list.append(Email(aluno, CACO, titulo, file_list[0], anexos,
+                                login, user, host, port, passwd))
 
 # enviando lista
-map(lambda x: x.spam(), email_list)
+    map(lambda x: x.spam(), email_list)
