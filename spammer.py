@@ -68,18 +68,18 @@ def lista_de_alunos():
 
 if __name__ == "__main__":
     MIN_ARGS = 1 # número mínimo de argumentos
-# Exemplo:
-# [defaults]
-# host = hostname
-# login = login_no_servidor_smtp
-# user = usuario_no_servidor_smtp
-# port = porta_de_conexao_ao_servidor
-# passwd = senha
+    # Exemplo:
+    # [defaults]
+    # host = hostname
+    # login = login_no_servidor_smtp
+    # user = usuario_no_servidor_smtp
+    # port = porta_de_conexao_ao_servidor
+    # passwd = senha
     config = ConfigParser.ConfigParser()
     config.read(["/etc/caco_spammer.conf", os.path.expandvars("${HOME}/.caco_spammer.conf")])
 
-# lendo parâmetros de linha de comando
-# idéia contribuída por Gustavo Serra Scalet
+    # lendo parâmetros de linha de comando
+    # idéia contribuída por Gustavo Serra Scalet
     options = {
         '-a': ['--all', u'Envia emails para todos os alinus do IC', False],
         '-q': ['--quiet', u'Não imprime nada na saída padrão', False],
@@ -122,14 +122,14 @@ Use a opção -h para ver o modo de uso do aplicativo"""
         else: # é booleano
             opt[_i[0].strip("'").strip()] = rvalue.strip("'").strip()
 
-# Avaliando título do email
+    # Avaliando título do email
     if opt.has_key("titulo"):
         titulo = opt["titulo"]
     else:
         print(u"Falta título")
         sys.exit(os.EX_USAGE)
 
-# Avaliando lista de anexos
+    # Avaliando lista de anexos
     if opt.has_key("anexo"):
         anexos = opt["anexo"]
     else:
@@ -137,14 +137,14 @@ Use a opção -h para ver o modo de uso do aplicativo"""
             print(u"Falta lista de anexos")
 
     student_list = lista_de_alunos()
-# mantendo apenas os endereços especificados pelos parâmetros
+    # mantendo apenas os endereços especificados pelos parâmetros
     if opt.has_key("ano"):
         student_list = filter(lambda x: x.index("ra" + opts["--ano"]), student_list)
 
-# TODO: implementar a filtragem por curso
+    # TODO: implementar a filtragem por curso
 
-# FIXME: parar de usar as variáveis inúteis abaixo
-# FIXME: verificar pela existência das opções abaixo na configuração
+    # FIXME: parar de usar as variáveis inúteis abaixo
+    # FIXME: verificar pela existência das opções abaixo na configuração
     CACO = "caco@ic.unicamp.br"
     host = config.get("defaults", "host")
     login = config.get("defaults", "login")
@@ -159,5 +159,5 @@ Use a opção -h para ver o modo de uso do aplicativo"""
         email_list.append(Email(aluno, CACO, titulo, file_list[0], anexos,
                                 login, user, host, port, passwd))
 
-# enviando lista
+    # enviando lista
     map(lambda x: x.spam(), email_list)
